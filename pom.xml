@@ -20,6 +20,7 @@
     <module>boot</module>
     <module>utils</module>
     <module>parent</module>
+    <module>junit</module>
   </modules>
 
   <build>

@@ -6,10 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="framework" />
-        <module name="boot" />
-        <module name="parent" />
         <module name="web" />
+        <module name="junit" />
+        <module name="parent" />
+        <module name="boot" />
+        <module name="framework" />
         <module name="utils" />
       </profile>
     </annotationProcessing>
@@ -17,6 +18,7 @@
       <module name="boot" target="8" />
       <module name="framework" target="8" />
       <module name="framework (1)" target="1.5" />
+      <module name="junit" target="1.8.0_202-release" />
       <module name="parent" target="8" />
       <module name="RBF" target="1.5" />
       <module name="utils" target="8" />
@@ -27,6 +29,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="boot" options="-parameters" />
       <module name="framework" options="-parameters" />
+      <module name="junit" options="-parameters" />
       <module name="parent" options="-parameters" />
       <module name="utils" options="-parameters" />
       <module name="web" options="-parameters" />
