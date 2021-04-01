@@ -18,7 +18,7 @@
       <module name="boot" target="8" />
       <module name="framework" target="8" />
       <module name="framework (1)" target="1.5" />
-      <module name="junit" target="1.8.0_202-release" />
+      <module name="junit" target="1.8" />
       <module name="parent" target="8" />
       <module name="RBF" target="1.5" />
       <module name="utils" target="8" />
