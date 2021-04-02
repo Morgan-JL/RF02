@@ -15,7 +15,6 @@
   <properties>
     <fastjson.version>1.2.47</fastjson.version>
     <asm.version>8.0.1</asm.version>
-    <junit.version>4.13.1</junit.version>
     <cglib.version>3.3.0</cglib.version>
     <hutool.version>5.5.1</hutool.version>
   </properties>
@@ -50,11 +49,6 @@
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
       <version>${asm.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
     </dependency>
     <dependency>
       <groupId>com.alibaba</groupId>

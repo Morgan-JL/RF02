@@ -2,6 +2,7 @@ package cn.rbf.core;
 
 import cn.rbf.AutoScanApplicationContext;
 import cn.rbf.container.Injection;
+import cn.rbf.reflect.ClassUtils;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -72,7 +73,8 @@ public class RBFExtension implements BeforeAllCallback, AfterAllCallback,
   public Object createTestInstance(TestInstanceFactoryContext testInstanceFactoryContext,
       ExtensionContext extensionContext) throws TestInstantiationException {
     Class<?> testClass = extensionContext.getTestClass().get();
-    Injection.inject(testClass);
-    return testClass;
+    Object obj = ClassUtils.newObject(testClass);
+    Injection.inject(obj);
+    return obj;
   }
 }

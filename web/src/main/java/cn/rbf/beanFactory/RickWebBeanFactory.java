@@ -9,6 +9,7 @@ import cn.rbf.base.BaseUtils;
 import cn.rbf.container.factory.IocBeanFactory;
 import cn.rbf.proxy.CglibProxyFactory;
 import cn.rbf.reflect.AnnotationUtils;
+import cn.rbf.reflect.ClassUtils;
 import cn.rbf.route.RouteContainer;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -46,12 +47,8 @@ public class RickWebBeanFactory extends IocBeanFactory {
       }
 
       if (AnnotationUtils.isExist(aClass, Controller.class)) {
-        try {
-          beans.add(aClass.newInstance());
-          RouteContainer.getInstance().rigOut(aClass);
-        } catch (InstantiationException | IllegalAccessException e) {
-          e.printStackTrace();
-        }
+        beans.add(ClassUtils.newObject(aClass));
+        RouteContainer.getInstance().rigOut(aClass);
       }
 
     }

@@ -5,6 +5,7 @@
 
 package cn.rbf.container;
 
+import cn.hutool.core.util.ClassUtil;
 import cn.rbf.annotations.Await;
 import cn.rbf.annotations.Component;
 import cn.rbf.annotations.Configuration;
@@ -14,6 +15,7 @@ import cn.rbf.container.factory.BeanFactory;
 import cn.rbf.container.factory.BeanNamer;
 import cn.rbf.container.factory.IocBeanFactory;
 import cn.rbf.container.factory.Namer;
+import cn.rbf.reflect.ClassUtils;
 import cn.rbf.scan.Scan;
 import cn.rbf.scan.Scanner;
 import java.lang.annotation.Annotation;
@@ -90,23 +92,21 @@ public class RegisterMachine {
     while (var3.hasNext()) {
       Class aClass = (Class) var3.next();
 
-      try {
-        if (!aClass.isInterface() && !Modifier.isAbstract(aClass.getModifiers())) {
-          if (AnnotationUtils.isExist(aClass, Configuration.class)) {
-            configureContainer.append(aClass.getSimpleName(), aClass);
-          } else {
-            String id = this.namer.getBeanName(aClass);
-            beanContainer.append(id, new Module(id, aClass.newInstance()));
-          }
+      if (!aClass.isInterface() && !Modifier.isAbstract(aClass.getModifiers())) {
+        if (AnnotationUtils.isExist(aClass, Configuration.class)) {
+          configureContainer.append(aClass.getSimpleName(), aClass);
+        } else {
+          String id = this.namer.getBeanName(aClass);
+          beanContainer.append(id, new Module(id, ClassUtils.newObject(aClass)));
         }
-      } catch (IllegalAccessException | InstantiationException var8) {
-        var8.printStackTrace();
       }
     }
 
     BeanFactory factory;
     IocBeanFactory beanFactory;
-    for (var3 = ServiceLoader.load(BeanFactory.class).iterator(); var3.hasNext();
+    for (var3 = ServiceLoader.load(BeanFactory.class).
+
+        iterator(); var3.hasNext();
         beanFactory.add(factory.getClass())) {
 
       factory = (BeanFactory) var3.next();
@@ -146,15 +146,15 @@ public class RegisterMachine {
   }
 
   public Set<Class<?>> getClasses(Class<?>[] aClass) {
-    Set<Class<?>> classes=new HashSet<>();
+    Set<Class<?>> classes = new HashSet<>();
     for (Class<?> componentClass : allClasses) {
       for (Class<?> clz : aClass) {
-        if(clz.isAnnotation()){
-          if(componentClass.isAnnotationPresent((Class<? extends Annotation>)clz)){
+        if (clz.isAnnotation()) {
+          if (componentClass.isAnnotationPresent((Class<? extends Annotation>) clz)) {
             classes.add(componentClass);
           }
-        }else {
-          if(clz.isAssignableFrom(componentClass)){
+        } else {
+          if (clz.isAssignableFrom(componentClass)) {
             classes.add(componentClass);
           }
         }

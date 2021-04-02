@@ -1,5 +1,6 @@
 package cn.rbf.annotation;
 
+import cn.rbf.annotations.Component;
 import cn.rbf.core.RBFExtension;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

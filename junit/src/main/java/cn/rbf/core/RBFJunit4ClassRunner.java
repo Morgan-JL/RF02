@@ -9,6 +9,10 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
 /**
+ * <p>
+ * junit4
+ * </p>
+ *
  * @author Morgan
  * @date 2021/4/1 11:54
  */

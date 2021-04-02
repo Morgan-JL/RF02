@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 public class Injection {
+
   private static BeansContainer beanContainer = BeansContainer.getInstance();
 
   public Injection() {
@@ -24,11 +25,11 @@ public class Injection {
   public static void inject(Object obj) {
     Class<?> aClass = obj.getClass();
     Field[] allFields = ClassUtils.getAllFields(aClass);
-    Field[] var3 = allFields;
-    int var4 = allFields.length;
+    Field[] fields = allFields;
+    int fLen = allFields.length;
 
-    for(int var5 = 0; var5 < var4; ++var5) {
-      Field field = var3[var5];
+    for (int i = 0; i < fLen; ++i) {
+      Field field = fields[i];
       Class<?> fieldType = field.getType();
       if (field.isAnnotationPresent(Inject.class)) {
         Inject inject = (Inject) AnnotationUtils.get(field, Inject.class);
@@ -42,10 +43,10 @@ public class Injection {
         } else {
           boolean flag = false;
           Collection<Module> modules = beanContainer.getBeans().values();
-          Iterator var12 = modules.iterator();
+          Iterator iterator = modules.iterator();
 
-          while(var12.hasNext()) {
-            Module module = (Module)var12.next();
+          while (iterator.hasNext()) {
+            Module module = (Module) iterator.next();
             Class<?> beanClass = module.getBean().getClass();
             if (fieldType.isAssignableFrom(beanClass)) {
               FieldUtils.setValue(obj, field, module.getBean());

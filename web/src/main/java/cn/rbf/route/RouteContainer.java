@@ -4,6 +4,7 @@ import cn.rbf.annotations.Controller;
 import cn.rbf.annotations.Mapping;
 import cn.rbf.container.Container;
 import cn.rbf.container.RegisterMachine;
+import cn.rbf.reflect.ClassUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
@@ -42,12 +43,8 @@ public class RouteContainer extends Container<BeanMapping> {
           mappingVal = mappingVal.startsWith("/") ? mappingVal.substring(1) : mappingVal;
           String beanId = controllerName + mappingVal;
 
-          try {
-            super.append(beanId,
-                new BeanMapping(clz.newInstance(), method));
-          } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-          }
+          super.append(beanId,
+              new BeanMapping(ClassUtils.newObject(clz), method));
 
           Map<String, String> paramInfo = new HashMap<>(10);
           for (Parameter parameter : method.getParameters()) {
