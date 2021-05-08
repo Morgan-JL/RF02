@@ -5,11 +5,9 @@
 
 package cn.rbf.container;
 
-import cn.hutool.core.util.ClassUtil;
-import cn.rbf.annotations.Await;
+import cn.rbf.annotations.Plugin;
 import cn.rbf.annotations.Component;
 import cn.rbf.annotations.Configuration;
-import cn.rbf.base.BaseUtils;
 import cn.rbf.reflect.AnnotationUtils;
 import cn.rbf.container.factory.BeanFactory;
 import cn.rbf.container.factory.BeanNamer;
@@ -33,8 +31,8 @@ public class RegisterMachine {
   private static final Logger log = LoggerFactory.getLogger("cn.rbf.container.RegisterMachine");
 
   private static RegisterMachine registerMachine;
-  private static BeansContainer beanContainer;
-  private static ConfigureContainer configureContainer;
+  private final BeansContainer beanContainer;
+  private final ConfigureContainer configureContainer;
   private Set<Class<?>> plugins;
   private Set<Class<?>> components;
   private Set<Class<?>> allClasses;
@@ -70,7 +68,7 @@ public class RegisterMachine {
     for (Class<?> aClass : aClasses) {
       if (!aClass.isAnnotation()) {
         if (AnnotationUtils.strengthenIsExist(aClass, Component.class)) {
-          if (AnnotationUtils.strengthenIsExist(aClass, Await.class)) {
+          if (AnnotationUtils.strengthenIsExist(aClass, Plugin.class)) {
             plugins.add(aClass);
             continue;
           }
@@ -87,16 +85,16 @@ public class RegisterMachine {
   }
 
   public void register() {
-    Iterator var3 = components.iterator();
+    Iterator componentIter = components.iterator();
 
-    while (var3.hasNext()) {
-      Class aClass = (Class) var3.next();
+    while (componentIter.hasNext()) {
+      Class aClass = (Class) componentIter.next();
 
       if (!aClass.isInterface() && !Modifier.isAbstract(aClass.getModifiers())) {
         if (AnnotationUtils.isExist(aClass, Configuration.class)) {
           configureContainer.append(aClass.getSimpleName(), aClass);
         } else {
-          String id = this.namer.getBeanName(aClass);
+          String id = Namer.getBeanName(aClass);
           beanContainer.append(id, new Module(id, ClassUtils.newObject(aClass)));
         }
       }
@@ -104,18 +102,17 @@ public class RegisterMachine {
 
     BeanFactory factory;
     IocBeanFactory beanFactory;
-    for (var3 = ServiceLoader.load(BeanFactory.class).
-
-        iterator(); var3.hasNext();
+    for (componentIter = ServiceLoader.load(BeanFactory.class).
+        iterator(); componentIter.hasNext();
         beanFactory.add(factory.getClass())) {
 
-      factory = (BeanFactory) var3.next();
+      factory = (BeanFactory) componentIter.next();
       beanFactory = null;
 
       try {
         beanFactory = (IocBeanFactory) factory.getClass().newInstance();
-      } catch (IllegalAccessException | InstantiationException var7) {
-        var7.printStackTrace();
+      } catch (IllegalAccessException | InstantiationException e) {
+        e.printStackTrace();
       }
     }
 
@@ -123,27 +120,19 @@ public class RegisterMachine {
 
   public void injection() {
     Collection<Module> modules = beanContainer.getBeans().values();
-    Iterator var2 = modules.iterator();
+    Iterator moduleIterator = modules.iterator();
 
-    while (var2.hasNext()) {
-      Module module = (Module) var2.next();
+    while (moduleIterator.hasNext()) {
+      Module module = (Module) moduleIterator.next();
       Injection.inject(module.getBean());
     }
 
   }
 
-  public String getBeanName(Class<?> beanClass) {
-    Namer namer = new Namer() {
-      public String getBeanName(Class<?> beanClass) {
-        return BaseUtils.lowercaseFirstLetter(beanClass.getSimpleName());
-      }
-
-      public String getBeanType(Class<?> beanClass) {
-        return "component";
-      }
-    };
-    return namer.getBeanName(beanClass);
+  public BeansContainer getBeanContainer(){
+    return this.beanContainer;
   }
+
 
   public Set<Class<?>> getClasses(Class<?>[] aClass) {
     Set<Class<?>> classes = new HashSet<>();

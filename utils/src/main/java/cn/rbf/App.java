@@ -18,5 +18,7 @@ public class App
         map.put("fd","morgan");
         JexlEngineUtil j =  new JexlEngineUtil(map);
         System.out.println(j.getProperties("${sd}"));
+
+
     }
 }

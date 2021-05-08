@@ -22,6 +22,8 @@
     <module>utils</module>
     <module>parent</module>
     <module>junit</module>
+    <module>mybatis</module>
+    <module>datasource</module>
   </modules>
 
   <build>

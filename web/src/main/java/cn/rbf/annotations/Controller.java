@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(value = {ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Await
+@Plugin
 @Component(type = "controller")
 public @interface Controller {
 

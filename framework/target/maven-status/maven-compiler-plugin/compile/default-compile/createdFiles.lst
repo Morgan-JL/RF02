@@ -1,3 +1,4 @@
 cn\rbf\proxy\CglibProxyFactory.class
 cn\rbf\welcome\RBFLogo.class
+cn\rbf\annotations\Plugin.class
 cn\rbf\welcome\Version.class

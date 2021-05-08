@@ -30,8 +30,9 @@ public class RBFLogo {
     InputStream logoStream = Resources.getInputStream(USER_LOGO_FILE);
     if (logoStream != null) {
       print(USER_LOGO_FILE);
+    }else{
+      print(DEFAULT_LOGO_FILE);
     }
-    print(DEFAULT_LOGO_FILE);
   }
 
   /**
@@ -40,7 +41,7 @@ public class RBFLogo {
    */
   private static void print(String filePath){
     try {
-      BufferedReader reader = Resources.getReader(DEFAULT_LOGO_FILE);
+      BufferedReader reader = Resources.getReader(filePath);
       Console.white(IOUtils.toString(reader));
       versionInfo();
       first = false;
@@ -77,7 +78,7 @@ public class RBFLogo {
     String osvsersion = "           :: (v" + System.getProperty("os.version") + ")";
     String java = ":: java";
     String javaversioin = "           :: (v" + System.getProperty("java.version") + ")";
-    String rbf = ":: rbf app";
+    String rbf = ":: RBF APP";
     String rbfversion = "           :: ("+ Version.version()+")";
     int maxLength = getMaxLength(os, java, rbf);
     String d = "";

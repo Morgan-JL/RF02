@@ -16,4 +16,7 @@ public abstract class RBFConf {
     public void setFirst(boolean first) {
         isFirst = first;
     }
+
+    public abstract void loadYaml();
+
 }

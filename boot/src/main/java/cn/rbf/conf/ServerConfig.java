@@ -218,25 +218,14 @@ public class ServerConfig extends RBFConf {
     return servlets;
   }
 
-  public void setServlets(List<ServletMapping> servlets) {
-    this.servlets = servlets;
-  }
-
   public List<FilterMapping> getFilters() {
     return filters;
-  }
-
-  public void setFilters(List<FilterMapping> filters) {
-    this.filters = filters;
   }
 
   public List<ListenerMapping> getListeners() {
     return listeners;
   }
 
-  public void setListeners(List<ListenerMapping> listeners) {
-    this.listeners = listeners;
-  }
 
   public int getPort() {
     return port;
@@ -324,5 +313,9 @@ public class ServerConfig extends RBFConf {
 
   public void setBaseDir(String baseDir) {
     this.baseDir = baseDir;
+  }
+
+  public void loadYaml() {
+    YamlParsing.loadServer(serverConfig);
   }
 }

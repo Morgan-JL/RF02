@@ -1,12 +1,12 @@
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\scan\RBFUrlClassLoader.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\AutoScanApplicationContext.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\container\factory\Destroy.java
+F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\annotations\Plugin.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\annotations\Bean.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\ApplicationContext.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\exception\FileSchemeException.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\container\Injection.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\container\RegisterMachine.java
-F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\annotations\Await.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\container\factory\Namer.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\container\factory\ConfigurationBeanFactory.java
 F:\知识星球\springboot\RBF02\RBF\framework\src\main\java\cn\rbf\proxy\CglibProxyFactory.java

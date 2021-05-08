@@ -1,0 +1,226 @@
+package cn.rbf.spi;
+
+import cn.rbf.base.Assert;
+import cn.rbf.base.StringUtils;
+import cn.rbf.reflect.AnnotationUtils;
+import cn.rbf.reflect.ClassUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public final class RBFFactoryLoader {
+
+  private static final Logger log = LoggerFactory.getLogger("c.l.framework.spi.RBFFactoryLoader");
+
+  private static final String FACTORIES_RESOURCE_LOCATION = "META-INF/rbf.factories";
+  static final Map<ClassLoader, Map<String, List<String>>> cache = new LinkedHashMap<>();
+
+  private RBFFactoryLoader() {
+
+  }
+
+  public static Set<Class<?>> loadFactoryClasses(Class<?> factoryType, ClassLoader classLoader) {
+    ClassLoaderAndFactoryNames cf = getClassLoaderAndFactoryNames(factoryType, classLoader);
+    List<String> factoryImplementationNames = cf.getFactoryImplementationNames();
+    Set<Class<?>> result = new HashSet<>(factoryImplementationNames.size());
+    for (String factoryImplementationName : factoryImplementationNames) {
+      result.add(forClassFactory(factoryImplementationName, factoryType, cf.getClassLoader()));
+    }
+    return result;
+  }
+
+  /**
+   * 得到有关于某个类型的所有SPI实现类实例
+   *
+   * @param factoryType 待查询的类型
+   * @param classLoader 指定一个类加载器，如果没有指定则使用本类的类加载器
+   */
+  public static <T> List<T> loadFactories(Class<T> factoryType, ClassLoader classLoader) {
+    ClassLoaderAndFactoryNames cf = getClassLoaderAndFactoryNames(factoryType, classLoader);
+    List<String> factoryImplementationNames = cf.getFactoryImplementationNames();
+    List<T> result = new ArrayList<>(factoryImplementationNames.size());
+    for (String factoryImplementationName : factoryImplementationNames) {
+      result.add(instantiateFactory(factoryImplementationName, factoryType, cf.getClassLoader()));
+    }
+//        AnnotationAwareOrderComparator.sort(result);
+    return result;
+  }
+
+  private static ClassLoaderAndFactoryNames getClassLoaderAndFactoryNames(Class<?> factoryType,
+      ClassLoader classLoader) {
+    ClassLoaderAndFactoryNames cf = new ClassLoaderAndFactoryNames();
+    Assert.notNull(factoryType, "'factoryType' must not be null");
+    ClassLoader classLoaderToUse = classLoader;
+    if (classLoaderToUse == null) {
+      classLoaderToUse = RBFFactoryLoader.class.getClassLoader();
+    }
+    cf.setClassLoader(classLoaderToUse);
+    List<String> factoryImplementationNames = loadFactoryNames(factoryType, classLoaderToUse);
+    cf.setFactoryImplementationNames(factoryImplementationNames);
+    if (log.isTraceEnabled()) {
+      log.trace("Loaded [" + factoryType.getName() + "] names: " + factoryImplementationNames);
+    }
+    return cf;
+  }
+
+  /**
+   * 得到有关于某个类型的所有SPI实现类的全限定名
+   *
+   * @param factoryType 待查询的类型
+   * @param classLoader 指定一个类加载器，如果没有指定则使用本类的类加载器
+   */
+  public static List<String> loadFactoryNames(Class<?> factoryType, ClassLoader classLoader) {
+    ClassLoader classLoaderToUse = classLoader;
+    if (classLoaderToUse == null) {
+      classLoaderToUse = RBFFactoryLoader.class.getClassLoader();
+    }
+    String factoryTypeName = factoryType.getName();
+    return loadLuckyFactories(classLoaderToUse)
+        .getOrDefault(factoryTypeName, Collections.emptyList());
+  }
+
+
+  /**
+   * 解析 META-INF/rbf.factories文件
+   *
+   * @param classLoader 类加载器
+    */
+  private static Map<String, List<String>> loadLuckyFactories(ClassLoader classLoader) {
+    Map<String, List<String>> result = cache.get(classLoader);
+    if (result != null) {
+      return result;
+    }
+
+    result = new HashMap<>();
+    try {
+      Enumeration<URL> urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION);
+      while (urls.hasMoreElements()) {
+        URL url = urls.nextElement();
+        InputStream inputStream = url.openStream();
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        for (Map.Entry<?, ?> entry : properties.entrySet()) {
+          String factoryTypeName = ((String) entry.getKey()).trim();
+          String[] factoryImplementationNames =
+              StringUtils.commaDelimitedListToStringArray((String) entry.getValue());
+          for (String factoryImplementationName : factoryImplementationNames) {
+            result.computeIfAbsent(factoryTypeName, key -> new ArrayList<>())
+                .add(factoryImplementationName.trim());
+          }
+        }
+      }
+
+      // Replace all lists with unmodifiable lists containing unique elements
+      result.replaceAll((factoryType, implementations) -> implementations.stream().distinct()
+          .collect(
+              Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
+      cache.put(classLoader, result);
+    } catch (IOException ex) {
+      throw new IllegalArgumentException("Unable to load factories from location [" +
+          FACTORIES_RESOURCE_LOCATION + "]", ex);
+    }
+    return result;
+  }
+
+
+  /**
+   * 实例化一个SPI抽象的实例
+   *
+   * @param factoryImplementationName SPI实例的全限定名
+   * @param factoryType SPI抽象类型
+   * @param classLoader 类加载器
+   */
+  @SuppressWarnings("unchecked")
+  private static <T> T instantiateFactory(String factoryImplementationName, Class<T> factoryType,
+      ClassLoader classLoader) {
+    try {
+      Class<?> factoryImplementationClass = ClassUtils
+          .forName(factoryImplementationName, classLoader);
+      if (!factoryType.isAssignableFrom(factoryImplementationClass)) {
+        throw new IllegalArgumentException(
+            "Class [" + factoryImplementationName + "] is not assignable to factory type ["
+                + factoryType.getName() + "]");
+      }
+      return (T) ClassUtils.newObject(factoryImplementationClass);
+    } catch (Throwable ex) {
+      throw new IllegalArgumentException(
+          "Unable to instantiate factory class [" + factoryImplementationName
+              + "] for factory type [" + factoryType.getName() + "]",
+          ex);
+    }
+  }
+
+  /**
+   * 得到一个SPI抽象的具体Class
+   *
+   * @param factoryImplementationName SPI实例的全限定名
+   * @param factoryType SPI抽象类型
+   * @param classLoader 类加载器
+   */
+  @SuppressWarnings("unchecked")
+  private static Class<?> forClassFactory(String factoryImplementationName, Class<?> factoryType,
+      ClassLoader classLoader) {
+    try {
+      Class<?> factoryImplementationClass = ClassUtils
+          .forName(factoryImplementationName, classLoader);
+      if (factoryType.isAnnotation()) {
+        Class<? extends Annotation> factoryTAnnType = (Class<? extends Annotation>) factoryType;
+        if (AnnotationUtils.strengthenIsExist(factoryImplementationClass, factoryTAnnType)) {
+          return factoryImplementationClass;
+        }
+        throw new IllegalArgumentException(
+            "Class [" + factoryImplementationName
+                + "] is not assignable to factory type [(Annotation) " + factoryType.getName()
+                + "]");
+      }
+      if (!factoryType.isAssignableFrom(factoryImplementationClass)) {
+        throw new IllegalArgumentException(
+            "Class [" + factoryImplementationName + "] is not assignable to factory type ["
+                + factoryType.getName() + "]");
+      }
+      return factoryImplementationClass;
+    } catch (Throwable ex) {
+      throw new IllegalArgumentException(
+          "Unable to instantiate factory class [" + factoryImplementationName
+              + "] for factory type [" + factoryType.getName() + "]",
+          ex);
+    }
+  }
+
+  static class ClassLoaderAndFactoryNames {
+
+    private ClassLoader classLoader;
+    private List<String> factoryImplementationNames;
+
+    public ClassLoader getClassLoader() {
+      return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+      this.classLoader = classLoader;
+    }
+
+    public List<String> getFactoryImplementationNames() {
+      return factoryImplementationNames;
+    }
+
+    public void setFactoryImplementationNames(List<String> factoryImplementationNames) {
+      this.factoryImplementationNames = factoryImplementationNames;
+    }
+  }
+
+}

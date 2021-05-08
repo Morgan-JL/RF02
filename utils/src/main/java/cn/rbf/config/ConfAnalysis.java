@@ -11,10 +11,6 @@ public interface ConfAnalysis {
 
     Map<String, Object> getMap();
 
-//    Object getObject(String prefix);
+    Object getObject(Object prefix);
 
-    default boolean isExpression(String prefix){
-        prefix=prefix.trim();
-        return prefix.startsWith("${")&&prefix.endsWith("}");
-    }
 }

@@ -1,11 +1,13 @@
 package cn.rbf.config;
 
-import org.yaml.snakeyaml.Yaml;
-
+import cn.rbf.base.JexlEngineUtil;
+import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * @author fk7075
@@ -16,7 +18,7 @@ public class YamlConfAnalysis implements ConfAnalysis{
 
     private Yaml yaml;
     private LinkedHashMap<String,Object> map;
-
+    private final JexlEngineUtil jexlEngineUtil;
 
     public YamlConfAnalysis(Reader yamlReader){
         yaml=new Yaml();
@@ -25,20 +27,34 @@ public class YamlConfAnalysis implements ConfAnalysis{
         while (iterator.hasNext()){
              map = (LinkedHashMap) iterator.next();
         }
+        jexlEngineUtil=new JexlEngineUtil(map);
+    }
+
+    public YamlConfAnalysis(List<BufferedReader> yamlReaders){
+        yaml=new Yaml();
+        map= new LinkedHashMap<>();
+        for (BufferedReader yamlReader : yamlReaders) {
+            Iterator<Object> iterator = yaml.loadAll(yamlReader).iterator();
+            while (iterator.hasNext()){
+                Map<String,Object> currMap = (LinkedHashMap) iterator.next();
+                for(Map.Entry<String,Object> entry:currMap.entrySet()){
+                    map.put(entry.getKey(),entry.getValue());
+                }
+            }
+        }
+        jexlEngineUtil=new JexlEngineUtil(map);
     }
 
     public Map<String, Object> getMap() {
         return map;
     }
 
-//    @Override
-    public Object getObject(String prefix) {
-        if(isExpression(prefix)){
-
-        }else{
-
-        }
-        return null;
+    @Override
+    public Object getObject(Object key) {
+        return jexlEngineUtil.getProperties(key);
     }
 
+    public Object getProperties(String prefix){
+        return getObject("${"+prefix+"}");
+    }
 }
